@@ -1,0 +1,555 @@
+**************************
+
+Perl5 Essentials
+
+PERL - Practical Extraction Reporting Language
+
+**************************
+
+-- Procedural & Object oriented
+
+-- '#' - comments
+
+-- lines must be terminated with ';'
+
+-- " " - facilitate Var interpolation
+
+-- ' ' - facilitate the setting the variables
+
+
+>>> EPIC: www.epic-ide.org ( eclipse plugin)
+
+-----------------------------------------------------
+
+>>> www.linuxtopia.org - Picking up Perl
+
+-- $ perl -c filename.pl   ## does not run the program, merely checks the syntax
+
+-- Installing modules:
+	Use CPAN
+	A new alternative interface to the CPAN repository is the CPAN++, a.k.a. CPANPLUS project.
+While this is currently still in development, it can be downloaded from CPAN and installed like any
+other module. It provides a cpanp tool in place of cpan, and will become the replacement for the
+CPAN module from Perl 5.10 onwards. While not yet ready for general release, CPANPLUS is well worth
+a look for those already familiar with the CPAN module or in search of a better tool for the job. For
+more information, see http://cpanplus.sourceforge.net/.
+	$ cpanp
+	CPAN Terminal> 
+	CPAN Terminal> install Apache::Registry
+	
+
+
+-- finding help:
+	perldoc -f funcname
+	perldoc -q pattern
+	perldoc -r pattern
+
+-- use strict;   ## enforces compile-time constraints on source code
+
+-- use warnings;  ## pragma controls run-time behavior
+
+-- <STDIN>  		## get input from the keyboard, default standard input
+Standard input is the input provided by a user either directly as we've seen, by
+typing on the keyboard, or indirectly, through the use of a 'pipe' that (as we'll see) pumps input into the
+program.
+
+-- <STDOUT> 		: standard out --> it's the output we
+provide to a user, which at the moment we're doing by writing to the screen. Every time we've used the
+function print so far, we've been implicitly using STDOUT:
+print STDOUT "Hello, world.\n";
+
+-- <STDERR> 		: standard error --> which is where we write the error messages when we die.
+
+-- $! 				: perl's special variable, In this case, Perl is passing on an error message from the system, and this error message should tell you why the open failed: It's usually something like 'No such file or directory' or 'permission denied'.
+
+-- <> 				: diamond operator, or readline operator. 
+<FH> reads one line from a filehandle. 
+e.g.: 
+	#!/usr/bin/perl
+	# nl.plx
+	use warnings;
+	use strict;
+	open FILE, "nlexample.txt" or die $!;
+	my $lineno = 1;
+	while (<FILE>) {     ##  this 'while' equivalent to => while (defined ($_ = <FILE>)) {
+		print $lineno++;
+		print ": $_";
+	}
+
+-- ARGV 			: 	This reads the names of files from the command line and opens them all, or if there is nothing specified on the command line, it reads from standard input. Actually, the @ARGV array holds any text after the program's name on the command line, and <ARGV> takes each file in turn.
+<ARGV> == <>   # abbreviation for <ARGV>
+
+-- $ARGV 			: name of the file we're currently reading. 
+
+-- $/  				: input record separator.  Usually, it's set to be the newline character, \n, and each 'record' is a line.
+
+-- @builtin{chomp}  ## removes any newline characters that are on the end of a variable
+
+-- '' 				single quotes strings are delimited by ''' at the beginning , and at the end, and everything in between is considered part of the string, included newlines, '#' characters and anything else. 
+
+-- functions --> 	undef   defined
+
+-- string operators: 
+	. : string concatenation
+	x : string duplication
+
+-- list literals: 
+	()
+	qw
+
+-- enumeration operator: ( .. )
+	(1 .. 100);
+	('A' .. 'Z');
+
+-- array character: @
+	my @stuff = qw/ a b c/;
+	my @things = (1,2,3,4);
+	my $oneThing = "all alone";
+	my @allOfIt = (@stuff, $oneThing, @things);
+
+-- assigning an array to a scalar: 
+    for my $i (1..10) {
+        my @array = somefunc($i);
+        $counts[$i] = scalar @array;
+    }
+
+-- The square brackets make a reference to a new array with a copy of what's in @array at the time of the assignment. 
+    for my $i (1..10) {
+        @array = somefunc($i);
+        $AoA[$i] = [ @array ];
+    }
+
+-- just remember always to use the array or hash constructors with [] or {} , and you'll be fine, although it's not always optimally efficient.
+    for my $i (1..10) {
+        my @array = somefunc($i);
+        $AoA[$i] = \@array;
+    }
+
+-- In summary: 
+    $AoA[$i] = [ @array ];     # usually best
+    $AoA[$i] = \@array;        # perilous; just how my() was that array?
+    @{ $AoA[$i] } = @array;    # way too tricky for most programmers
+    
+
+-- subscript of the last element in the array:
+	$#array # subscript of the last element in @array
+	$array[$#array]  :: last element of the array
+	$#array + 1 :: length of array
+
+-- array slices:
+	use strict;
+	my @stuff = qw/everybody wants a rock/;
+	my @rock  = @stuff[1 .. $#stuff];      # @rock is qw/wants a rock/
+	my @want  = @stuff[ 0 .. 1];           # @want is qw/everybody wants/
+	@rock     = @stuff[0, $#stuff];        # @rock is qw/everybody rock/
+
+
+-- arrays as stack:
+	use strict;
+	my @stack;
+	push(@stack, 7, 6, "go");   # @stack is now qw/7 6 go/
+	my $action = pop @stack;    # $action is "go", @stack is (7, 6)
+	my $value = pop(@stack) +
+            pop(@stack);    # value is 6 + 7 = 13, @stack is empty
+
+
+-- arrays as queues:
+	my @queue;
+	unshift (@queue, "Customer 1"); # @queue is now ("Customer 1")
+	unshift (@queue, "Customer 2"); # @queue is now ("Customer 2" "Customer 1")
+	unshift (@queue, "Customer 3");
+          # @queue is now ("Customer 3" "Customer 2" "Customer 1")
+	my $item = pop(@queue);         # @queue is now ("Customer 3" "Customer 2")
+	print "Servicing $item\n";       # prints:  Servicing Customer 1\n
+	$item = pop(@queue);            # @queue is now ("Customer 3")
+	print "Servicing $item\n";       # prints:  Servicing Customer 2\n
+
+-- The context:
+	use strict;
+	my @things = qw/a few of my favorite/;
+	my $count  = @things;                   # $count is 5
+	my @moreThings = @things;               # @moreThings is same as @things
+It evaluates @things in a scalar context and given the number of elements in the array.
+
+-- array interpolation
+	use strict;
+	my @saying = qw/these are a few of my favorite/;
+	my $statement = "@saying things.\n";
+         # $statement is "these are a few of my favorite things.\n"
+	my $stuff = "@saying[0 .. 1] @saying[$#saying - 1, $#saying]  things.\n"
+         # $stuff is "these are my favorite things.\n"
+
+
+--- Control Structures
+
+--   blocks:
+	surround code with {}
+	Note that any variable declared in the block (in the example, $var) lives only until the end of that block. 
+	use strict;
+	{
+	my $var;
+	Statement;
+	Statement;
+	Statement;
+	}
+
+>>> perlreftut  (perldoc.perl.org)
+
+
+-- split function:
+	split /PATTERN/, EXPR, LIMIT
+	split /PATTERN/, EXPR
+	split /PATTERN/ 
+				Splits the string EXPR into a list of strings and returns that
+               list.  By default, empty leading fields are preserved, and
+               empty trailing ones are deleted.  (If all fields are empty,
+               they are considered to be trailing.)
+               In scalar context, returns the number of fields found.
+
+               print join(':', split(/ */, 'hi there')), "\n";
+               > 'h:i:t:h:e:r:e'
+
+               print join(':', split(//, 'hi there')), "\n";
+               > 'h:i: :t:h:e:r:e'
+
+               print join(':', split(/(?=\w)/, 'hi there!'));
+               > 'h:i :t:h:e:r:e!'
+
+               print join(':', split(//,   'hi there!', -1)), "\n";
+               print join(':', split(/\W/, 'hi there!', -1)), "\n";
+               > 'h:i: :t:h:e:r:e:!:'
+               > 'hi:there:'
+
+               ($login, $passwd, $remainder) = split(/:/, $_, 3);
+
+               split(/([,-])/, "1-10,20", 3);
+               > (1, '-', 10, ',', 20)
+
+                A "split" with no arguments really does a "split(' ', $_)" internally.
+
+
+
+
+-- A reference to an anonymous array can be created using square brackets:
+	$arrayref = [1, 2, ['a', 'b', 'c']];
+
+-- A reference to an anonymous hash can be created using curly brackets:
+	 $hashref = {
+        'Adam'  => 'Eve',
+        'Clyde' => 'Bonnie',
+    };
+
+--  if you wanted a function to make a new hash and return a reference to it, you have these options:
+	sub hashem {        { @_ } }   # silently wrong
+    sub hashem {       +{ @_ } }   # ok
+    sub hashem { return { @_ } }   # ok
+
+    On the other hand, if you want the other meaning, you can do this:
+    sub showem {        { @_ } }   # ambiguous (currently ok,
+                                   # but may change)
+    sub showem {       {; @_ } }   # ok
+    sub showem { { return @_ } }   # ok
+    The leading +{ and {; always serve to disambiguate the expression to mean either the HASH reference, or the BLOCK.
+    
+--  Sorting: 
+	@out = sort @in;   # sorts lexically @in, returns them in array @out
+
+	@out = sort numerically @in;
+	sub numerically { return $a <=> $b; }  # return -1 if $a before $b, 
+											#  1 if $b comes before $a, 
+											#  0 if same. 
+
+	sub desc_numerically { return $b <=> $a; }	# descending numerical order
+
+	@out = reverse sort numerically @in; 	# sort data numerically in ascending order 											# then reverse it. 
+
+	@out = sort lexically @in; 
+	sub lexically { return $a cmp $b; }		# sorts lexically
+
+
+	@out = sort { $a <=> $b } @in; 
+	@out = sort { $b <=> $a } @in;
+	@out = sort { $a cmp $b } @in; 
+
+-- Complex Sorts:
+
+	my @out = sort namesort @in; 
+	sub namesort { 
+		return $a->{surname} cmp $b->{surname}
+			|| $a->{forename} cmp $b->{forename};
+	}
+
+	my @out = sort namesort @in;
+	sub namesort {
+		return $a->{surname} cmp $b->{surname}
+			|| $a->{forename} cmp $b->{forename}
+			|| $b->{age} <=> $a->{age};
+	}
+
+
+--- Sorting: The Orcish Manoeuvre 
+
+	my %key_cache;
+	my @out = sort orcish @in;
+	sub orcish {
+		return ($key_cache{$a} ||= get_sort_key($a))
+			<=> ($key_cache{$b} ||= get_sort_key($b));
+	}
+	sub get_sort_key {
+		# Code that takes the list element and returns
+		# the part that you want to sort on
+	}
+
+	The hash %key_cache is used to store the precalculated sort keys.
+The function orcish carries out the sort, but for each element, before calculating
+the sort key, it checks to see if the key has already been calculated, in which case
+it will be stored in %key_cache. It makes use of Perl’s ||= operator to make the
+code more streamlined. The code
+		$key_cache{$a} ||= get_sort_key($a)
+can be expanded to
+		$key_cache{$a} = $key_cache{$a} || get_sort_key($a)
+The net effect of this code is that if $key_cache{$a} doesn’t already exist then
+get_sort_key is called to calculate it and the result is stored in $key_cache{$a}.
+The same procedure is carried out for $b and the two results are then compared
+using <=> (this could just as easily be cmp if you need a lexical comparison).
+Depending on how expensive your get_sort_key function is, this method can
+greatly increase your performance in sorting large lists.
+
+
+--- 3.1.4 Schwartzian transform: 
+
+	0 hashref---> year 1972
+			---> title Ziggy Stardust
+	1 hashref---> year 1971
+			---> title Hunky Dory
+
+	my @CDs_sorted_by_year = sort { $a->{year} <=> $b->{year} } @CDs;
+
+	-- to get to the sort key (the release date) we have to go through a
+hash reference to get to that hash itself. Hash lookup is a reasonably expensive operation
+in Perl and we’d be better off if we could avoid having to look up each element
+a number of times.
+Let’s introduce an intermediate array. Each element of the array will be a reference
+to a two-element array. The first element will be the year and the second element
+will be a reference to the original hash. We can create this list very easily
+using map.
+	my @CD_and_year = map { [$_->{year}, $_] } @CDs;
+
+
+0 arrayref	--> 0 1972
+			--> 1 hashref	--> year 1972
+							--> title Ziggy Stardust
+1 arrayref	--> 0 1971
+			--> 1 hashref	--> year 1971
+							--> title Hunky Dory
+
+
+---- Regexp -----------------
+
+	$string =~ m/ / ;  Match
+
+	. 	match to any character (1);
+	* 	match to zero or more chr
+	+	match to one or more chr
+	\ 	quote the next metacharacter
+	^	match the beginning of the line
+	. 	match any chr except newline
+	$	match the end of the line
+	| 	alternation ( match one thing or another)
+	()	grouping
+	[]	bracketed chr class
+
+
+	*	match 0 --> more
+	+	match 1 --> more
+	?	match 1 --> 0
+	{n}	match n times
+	{n,}	match at least n times
+	{n,m}	match at least n but no more than m times
+
+	\w 		word chrs [a-zA-Z0-9]
+	\d 		digits
+	\s 		whitespace
+	\W 		non-word chrs
+	\D 		non-digits
+	\S 		non-whitespace
+	\b 		word boundary ( whitespace , . ? !)
+	\t 		tab
+	\n 		newline
+	\r 		return
+	\e 		escape
+
+	modifiers:
+	g 		global
+
+	groups:
+	matches saved as $1, $2, etc
+	$string = "Rob";
+	$string =~ m/(R..)/; --> $1 = "Rob"
+
+	$string =~ s/(\w)(\w+)/uc($1).$2/eg;  --> 1 chr 1+chrs uppercase $1app$2 execute globally
+
+	 perl -e '$s="abcd efgh ijkl mno pqrst uvwxyz"; $s=~ s/(\w)(\w+)/uc($1).$2/eg; print "$s\n"'
+	 Abcd Efgh Ijkl Mno Pqrst Uvwxyz
+
+
+------------ Perl DBI -------------------------
+
+	 DBI : Database Interface
+	 DBD : Database Driver
+
+
+------------ Install packages by CPAN -----------
+
+perl -MCPAN -e shell
+
+cpan[1] i /Task::Kensho/
+cpan[2] install Task::Kensho
+
+----------------------------------------------------
+
+*** map, grep, sort
+
+map BLOCK LIST
+map EXPR,LIST
+Evaluates the BLOCK or EXPR for each element of LIST (locally setting $_ to each element) and returns the list value composed of the results of each such evaluation. In scalar context, returns the total number of elements so generated. Evaluates BLOCK or EXPR in list context, so each element of LIST may produce zero, one, or more elements in the returned value.
+
+map examples:
+
+	foreach $line (@lines) { $line = uc $line; }
+
+	is equivalent to: 
+
+	@lines = map uc, @lines;
+
+	is equivalent to:
+
+	@lines = map {uc} @lines;
+
+	other ways:
+
+	$_ = uc foreach @lines; 
+
+	foreach (@lines) { $_ = uc; }
+
+
+map in hash context: 
+	examples:
+
+		foreach ( sort keys %h) {
+			print "$_ => $h{$_} \n";
+		}
+
+		or this way: 
+
+		map {
+			print "$_ => $h{$_}\n";
+		} sort keys %h; 
+
+		or this way:
+
+		print "$_ => $h{$_}\n" foreach sort keys %h;
+
+
+Note: * Use explicitly scalar map expressions:
+	e.g.:
+
+		@dates = map {
+			localtime $_ 	# WRONG!
+		} @epoch_times; 
+
+
+		@dates = map {
+			scalar localtime $_ 	# CORRECT
+		} @epoch_times;
+
+
+* map {} is list context:
+	Use explicitly scalar map expressions
+
+	e.g.:
+
+		@words = map {
+			scalar split  # Wrong!
+		} @lines;
+ 
+* map {} confusion
+how does perl know that {6} is a code block or a partial hash? Use +{6}. + is required or you will get a syntax error. 
+
+	e.g.:
+		map +{ 6 }, @stuff; # hash
+		map  { 6 } @stuff; # code block
+
+* using map in void context
+	- frowned upon
+	- incurs extra overhead
+
+		map { 
+			print "$_ => $h{$_}\n"
+			} sort keys %h; 
+
+* creating a hash in map
+	map { $age_of{$_} = -M } @files;
+
+
+* skipping in map
+	- drop an item using an empty list
+	- do not use an explicit return
+	e.g.: 
+	@ones = map {
+		$_ < 10 ? $_ : ();
+	} @numbers;
+
+-------------------------------------------------------
+
+*** What is grep?
+	- similar to unix command-line utility grep
+	- given a list, grep returns only certain items
+
+	e.g.:
+
+	@ones = map {
+		$_ < 10 ? $_ : ();
+	} @numbers;
+
+	@ones = grep { $_ < 10 } @numbers;
+
+* boolean scalar context
+	- anywhere in perl where a true/false is expected 
+		if, while, and, or, not, &&, ||, !, etc.
+
+	- evaluation results in 0, "0", 0.0, "", or undef then it is false. everything else is true.
+
+* examples of grep:
+
+	@ones = grep { $_ < 10 } @numbers;
+
+	@dirs = grep { -d } @files;
+
+	@no_dup = grep { ! $h{$_}++ } @old;
+
+	@errors = grep { /error/i } @log;
+
+	@true = grep { $_ } @all;
+
+
+--------------------------------------------
+
+*** Sorting basics
+
+	sort can be called in three ways:
+	1. with no comparison directives
+	2. with a subroutine that returns comparison directives
+	3. with a code block ( an anonymous subroutine ) that returns comparison directives
+
+	e.g.:
+
+	@sorted = sort  @unsorted;
+
+	@sorted = sort sub @unsorted;
+
+	@sorted = sort { exp } @unsorted;
+
+----------------------------------------------------
+
+
