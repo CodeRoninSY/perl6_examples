@@ -96,3 +96,53 @@ say $hero.act;
 my Range $rg = 'α'..'ω';
 say $rg.pick(7);
 
+
+my $t = " " xx 4;
+class Journey {
+    # error if origin is not provided
+    has $.origin is required;
+    # set the destination to Orlando as default (unless that is the origin!)
+    has $.destination = self.origin eq 'Orlando' ?? 'Kampala' !! 'Orlando';
+    has @!travelers;
+    has Str $.notes is rw;
+
+    method add-traveler($name) {
+        if $name ne any(@!travelers) {
+            push @!travelers, $name;
+        }
+        else {
+            warn "$name is already going on the journey!";
+        }
+    }
+
+    method describe() {
+        "From $!origin to $!destination"
+    }
+
+    multi method notes() { "$!notes\n" };
+    multi method notes( Str $note ) { $!notes ~= "$note\n$t" };
+
+    method Str { "⤷ $!origin\n$t" ~ self.notes() ~ "$!destination ⤶\n" };
+}
+
+# Create a new instance of the class.
+my $vacation = Journey.new(
+    origin      => 'Sweden',
+    destination => 'Switzerland',
+    notes       => 'Pack hiking gear!'
+);
+
+# Use an accessor; this outputs Sweden.
+say $vacation.origin;
+
+# Use an rw accessor to change the value.
+# $vacation.notes = 'Pack hiking gear and sunglasses!';
+
+# say $vacation.notes;
+
+my $trip = Journey.new( :origin<Here>, :destination<There>,
+                        travelers => <þor Freya> );
+
+$trip.notes("First steps");
+notes $trip: "Almost there";
+print $trip;
